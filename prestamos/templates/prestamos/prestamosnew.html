@@ -1,0 +1,402 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+{% load static %}
+
+{% load i18n staticfiles %}
+
+{% block extra_head %}
+	<link rel="stylesheet" href="{% static 'css/misestilos.css' %}">
+
+	 <!-- estos links son para darle estilos a la table de listado de clientes -->
+	 <link rel="stylesheet" href="{% static 'css/uikit.min.css' %}">
+	 <link rel="stylesheet" href="{% static 'css/dataTables.uikit.min.css' %}">
+ 
+
+{% endblock %}
+
+{%block opcionactiva %}Registrar prestamo{% endblock %}
+
+{% block content %}
+		<div class="row">
+			<div class="col-md-3" id="formsection">
+					<form id="formsearch" method="POST" onsubmit="return false;">
+						 {% csrf_token %}
+						 <label><strong>Digite nombre del cliente para realizar busqueda</strong></label>
+						 <input type="text" class="form-control txtSearch" id="txtSearch" name="txtSearch">
+						 <div class="text-center">
+							<button type="button" id="btBuscarCliente" class="btn btn-info">Buscar cliente</button>
+						 </div>
+						 
+					</form>
+
+					 <div id="datoscliente">
+					 	
+					 </div>
+
+					<form method='POST' novalidate>
+						 {% csrf_token %}
+						 {% include 'form.html' %}
+
+						 <input type="hidden" id="cliid" name="cliid" value="">
+
+						 <div class="text-center">
+							<button id = "btGuardaPrestamo"  type="submit" class="btn btn-success">Guardar</button>
+						</div>
+
+						 
+						
+						 <div id="mensajes">
+
+						 </div>
+					</form>
+			</div>
+
+			<div class="col-md-9">
+				<div class="card">
+                    <div class="card-header text-center">
+                       Listado de prestamos
+                    </div>
+                    <div class="card-body">
+                            <div class="table-responsive">
+									
+								<form method='POST' novalidate onsubmit="return false;">
+										{% csrf_token %}
+											<table id="tablalistadoPrestamosTodos" class="uk-table uk-table-hover uk-table-striped" style="width:100%"> 
+													<thead>
+														<th>{% trans "id" %}</th>
+														<th>{% trans "Fecha prestamo" %}</th>
+														<th>{% trans "Nombres cliente" %}</th>
+														<th>{% trans "Apellidos cliente" %}</th>
+														<th>{% trans "Capital prestado" %}</th>
+														<th>{% trans "Tipo prestamo" %}</th>
+														<th>{% trans "Acción" %}</th>
+													</thead>
+													<tbody>
+													</tbody>
+											  </table>
+
+								</form>
+							</div>
+							
+							<div id="verificaBorrado">
+
+							</div>
+                  
+                    </div>
+                </div>
+			</div>
+		
+		</div>
+
+		
+{% endblock %}
+
+{% block js %}
+
+<script type="text/javascript" charset="utf8" src="{% static 'js/jquery.dataTables.js' %}"></script>
+<script src="{% static 'js/ddv_example_1_10.js' %}"></script>
+<script type="text/javascript">
+
+	PRESTAMOS_TODOS_LIST_JSON_URL = '{% url "listar_prestamos_todos" %}';
+				
+	   
+   var dt_language = {
+		"emptyTable":     "{% trans 'No existen prestamos registrados' %}",
+		"info":           "{% trans 'Mostrar _START_ a _END_ de _TOTAL_ registros' %}",
+		"infoEmpty":      "{% trans 'Mostrando 0 a 0 of 0 registros' %}",
+		"infoFiltered":   "{% trans '(filtrado de _MAX_ registros totales)' %}",
+		"infoPostFix":    "",
+		"thousands":      ",",
+		"lengthMenu":     "{% trans 'Show _MENU_ entries' %}",
+		"loadingRecords": "{% trans 'Cargando...' %}",
+		"processing":     "{% trans 'Procesando...' %}",
+		"search":         "{% trans 'Buscar:' %}",
+		"show":         "{% trans 'Mostrar:' %}",
+		"zeroRecords":    "{% trans 'No existen registros' %}",
+		"paginate": {
+			"first":      "{% trans 'Primero' %}",
+			"last":       "{% trans 'Ultimo' %}",
+			"next":       "{% trans 'Siguiente' %}",
+			"previous":   "{% trans 'Anterior' %}"
+		},
+		"aria": {
+			"sortAscending":  "{% trans ': activate to sort column ascending' %}",
+			"sortDescending": "{% trans ': activate to sort column descending' %}"
+		}
+	}
+
+	cargarPrestamosTodos();
+
+</script>
+
+
+
+
+
+
+
+	<script>
+
+
+        $(document).ready(function(){ 
+            $("#txtSearch").autocomplete({
+                source: "/ajax_calls/search/",
+                minLength: 2,
+                open: function(){
+                    setTimeout(function () {
+                        $('.ui-autocomplete').css('z-index', 99);
+                    }, 0);
+
+
+                }
+              });
+        });
+
+
+        $( "#btBuscarCliente" ).click(function() {
+  			//alert( "Handler for .change() called." );
+  			//e.preventDefault();
+  			var nombrecompleto = $("#txtSearch").val().trim();
+
+  			if (nombrecompleto!='' && nombrecompleto.includes(",")){
+
+  				nombrecompletosplitted = nombrecompleto.split(',');
+
+					var nombress = nombrecompletosplitted[0].trim();
+			  		var apellidoss = nombrecompletosplitted[1].trim();
+			  							
+			  			$.ajax({
+				        url: '/ajax_calls/traerDatosdeCliente/',
+				        data: {
+				          'nombres': nombress,
+				          'apellidos': apellidoss,
+
+				        },
+					        dataType: 'json',
+					        success: function (data) {
+
+					        	
+
+					          /*$('#datoscliente').html($('<label id="idcli">'+ data.id +'</label></br><label>Nombres: '+ data.nombres +'</label></br><label>Apellidos: '+ data.apellidos +'</label></br><label> Dirección: '+ data.direccion +'</label>'));*/
+					          $('#datoscliente').html($('<label><strong>Nombres</strong>: '+ data.nombres +'</label></br><label><strong>Apellidos</strong>: '+ data.apellidos +'</label></br><label> <strong>Dirección</strong>: '+ data.direccion +'</label>'));
+					          
+					           /*console.log( "el valor es"+ $('#idcli').val());
+					        	alert("el valor es"+ $('#idcli').text());*/
+					           
+					           //$(".clientehidden").val($('#idcli').text());
+					           //$("#cliid").val($('#idcli').text());
+					           $("#cliid").val(data.id);
+					           if ($("#cliid").val()==''){
+					           		alert("por favor seleccione un cliente");
+					           }
+					        	
+					        },
+					        error: function () {
+					            $('#datoscliente').html($('<label>No existe el cliente consultado</label>'));
+					        }
+					      });
+
+  			}else{
+  				alert('por favor digite un nombre de cliente a buscar.');
+  			}
+
+  	
+
+
+		});
+
+        $( "#txtSearch" ).change(function() {
+  			//alert( "Handler for .change() called." );
+  			//e.preventDefault();
+  			var nombrecompleto = $(this).val().trim();
+
+  			if (nombrecompleto!='' && nombrecompleto.includes(",")){
+
+  				nombrecompletosplitted = nombrecompleto.split(',');
+
+					var nombress = nombrecompletosplitted[0].trim();
+			  		var apellidoss = nombrecompletosplitted[1].trim();
+			  							
+			  			$.ajax({
+				        url: '/ajax_calls/traerDatosdeCliente/',
+				        data: {
+				          'nombres': nombress,
+				          'apellidos': apellidoss,
+
+				        },
+					        dataType: 'json',
+					        success: function (data) {
+
+					        	
+
+					          /*$('#datoscliente').html($('<label id="idcli">'+ data.id +'</label></br><label>Nombres: '+ data.nombres +'</label></br><label>Apellidos: '+ data.apellidos +'</label></br><label> Dirección: '+ data.direccion +'</label>'));*/
+					          $('#datoscliente').html($('<label><strong>Nombres</strong>: '+ data.nombres +'</label></br><label><strong>Apellidos</strong>: '+ data.apellidos +'</label></br><label> <strong>Dirección</strong>: '+ data.direccion +'</label>'));
+					          
+					           /*console.log( "el valor es"+ $('#idcli').val());
+					        	alert("el valor es"+ $('#idcli').text());*/
+					           
+					           //$(".clientehidden").val($('#idcli').text());
+					           //$("#cliid").val($('#idcli').text());
+					           $("#cliid").val(data.id);
+					           if ($("#cliid").val()==''){
+					           		alert("por favor seleccione un cliente");
+					           }
+					        	
+					        },
+					        error: function () {
+					            $('#datoscliente').html($('<label>No existe el cliente consultado</label>'));
+					        }
+					      });
+
+  			}else{
+  				alert('por favor digite un nombre de cliente a buscar.');
+  			}
+
+  	
+
+
+		});
+
+		$( "#txtSearch" ).keyup(function(key) {
+  			$(this).val($(this).val().toUpperCase());
+ 		
+		});
+
+		/*   $('#txtSearch').keydown(function (e) {
+          if (e.shiftKey || e.ctrlKey || e.altKey) {
+              e.preventDefault();
+          } else {
+              var key = e.keyCode;
+              if (!((key == 44) || (key == 8) || (key == 9) || (key == 32) || (key == 46) || (key >= 35 && key <= 40) || (key >= 65 && key <= 90) || key == 13)) {
+                  e.preventDefault();
+              }
+          }
+     	 });*/
+
+
+     
+	$(document).ready(function(){ 
+        $( "#btGuardaPrestamo" ).click(function(e) {
+			e.preventDefault();
+
+			  		  			
+  			//	console.log("ok el prestamo seleccionar fue: "+ $("#id_prestam").val());
+				var csrftoken = $("[name=csrfmiddlewaretoken]").val();
+
+					  							
+			  		  $.ajax({
+						url: '/prestamo/nuevo/',
+						type: 'POST',
+						headers:{
+      					  "X-CSRFToken": csrftoken
+    					},
+				        data: {
+							csrfmiddlewaretoken: csrftoken,
+						  'cliid': $("#cliid").val(),
+						  'fecha_prestamo': $("#id_fecha_prestamo").val(),
+						  'capital_prestado': $("#id_capital_prestado").val(),
+						  'tipo_prestamo': $("#id_tipo_prestamo").val(),
+						  'meses_plazo': $("#id_meses_plazo").val(),
+				          'porcentaje_aplicado': $("#id_porcentaje_aplicado").val(),
+						  'observaciones': $("#id_observaciones").val(),
+
+				        },
+					    dataType: 'json',
+					    success: function (data) {
+					         /* recargar abonos del cliente*/
+					          $('#mensajes').html($('</br><div class="alert alert-success" role="alert"> Prestamo numero '+ data.id_prestamo +' registrado con éxito</div>'));
+					          //cargarAbonos($("#id_prestam").val());
+							/* recargar la tabla de abonos de prestamos */
+							  /*USERS_LIST_JSON_URL = '{% url "PrestamosList110Json" %}';
+								   cargarPrestamos(data.id_cliente);*/
+								   cargarPrestamosTodos();
+								   limpiarcampos();
+
+				              },
+					    error: function (xhr, status, error) {
+								var errorMessage = xhr.status + ': ' + xhr.statusText
+					            $('#mensajes').html($('<div class="alert alert-danger" role="alert"> Error en el registro del prestamo: '+ errorMessage + ':'+ error +'</div>'));
+					        }
+
+					        
+					      });
+
+		});
+
+	
+
+
+
+
+		  });
+
+		  function limpiarcampos(){
+			  document.getElementById("id_capital_prestado").value='';
+			  document.getElementById("id_meses_plazo").value='';
+			  document.getElementById("id_observaciones").value='';
+			  			  
+		  }
+
+		  /*borrar prestamos*/
+		  function borrarPrestamo(elem){
+
+			var cellButton = elem.parentNode;
+			var parent_cellButton = cellButton.parentNode;
+			var Cells = parent_cellButton.getElementsByTagName("td");
+			console.log(Cells[0].innerText);
+			var id_prestamuss =  Cells[0].innerText;
+
+			var r = confirm("¿ Esta seguro de borrar el prestamo seleccionado ?");
+			if (r == true) {
+
+				var csrftoken2 = $("[name=csrfmiddlewaretoken]").val();
+
+				$.ajax({
+						url: '/prestamo/borrar/',
+						type: 'POST',
+						headers:{
+      					  "X-CSRFToken": csrftoken2
+    					},
+				        data: {
+							csrfmiddlewaretoken: csrftoken2,
+						  'id_prestamo': id_prestamuss,
+					        },
+					    dataType: 'json',
+					    success: function (data) {
+					         /* recargar abonos del cliente*/
+					          $('#verificaBorrado').html($('</br><div class="alert alert-success" role="alert"> El Prestamo seleccionado ha sido '+ data.detalle_respuesta +' </div>'));
+					          //cargarAbonos($("#id_prestam").val());
+							/* recargar la tabla de abonos de prestamos */
+							  /*USERS_LIST_JSON_URL = '{% url "PrestamosList110Json" %}';
+								   cargarPrestamos(data.id_cliente);*/
+								   cargarPrestamosTodos();
+
+				              },
+					    error: function (xhr, status, error) {
+								var errorMessage = xhr.status + ': ' + xhr.statusText
+					            $('#verificaBorrado').html($('<div class="alert alert-danger" role="alert"> Error en el borrado del prestamo: '+ errorMessage + ':'+ error +'</div>'));
+					        }
+
+					        
+					});
+			
+			}
+
+
+					
+			
+			
+		  }
+
+
+	 		
+		
+
+
+		 
+	
+        
+		 
+
+	</script>
+{% endblock %}

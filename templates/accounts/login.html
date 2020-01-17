@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+<h2>Iniciar sesión</h2>
+    <form method="POST" action="{% url 'login' %}">
+        {% csrf_token %}
+        {% include 'form.html' %}
+
+        <div class="text-center">
+                <button class="btn btn-info" type="submit">Iniciar</button>
+        </div>
+    </form>
+
+{% endblock %}
+

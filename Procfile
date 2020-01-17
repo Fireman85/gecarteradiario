@@ -1,0 +1,1 @@
+web: gunicorn gescartera_project.wsgi --log-file -

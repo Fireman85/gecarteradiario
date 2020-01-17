@@ -1,0 +1,299 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+{% load static %}
+{% load i18n staticfiles %}
+{% block extra_head %}
+	<link rel="stylesheet" href="{% static 'css/misestilos.css' %}">
+
+	<link rel="stylesheet" type="text/css" href="{% static 'css/jquery.dataTables.css' %}">
+    
+   
+{% endblock %}
+
+{%block opcionactiva %}Unir cuentas{% endblock %}
+
+{% block content %}
+		<div class="row">
+			<div class="col-md-12">
+						
+			</div>
+	
+		</div>
+
+
+		<div class="row" id="divforms">
+			<div class="col-md-12" >
+				<form id="formsearch" method="POST" onsubmit="return false;">
+					{% csrf_token %}
+					<label><strong>Digite nombre del cliente para realizar busqueda</strong></label>
+					<input type="text" class="form-control txtSearch" id="txtSearch" name="txtSearch">
+			   </form>
+
+			  				 
+							   <div id="datoscliente">
+					
+							   </div>
+		
+				<div class="card">
+				   <div class="card-header text-center" style="background: #d5b8ff; color: white;">
+					 <strong> Listado de prestamos del cliente  </strong>
+				   </div>
+				   <div class="card-body">
+					 
+					   <div class="table-responsive">
+						   <table id="tablaPrestamos" class="datatable" style="width:100%"> 
+							   <thead>
+								   <th>{% trans "id" %}</th>
+								   <th>{% trans "Capital prestado" %}</th>
+								   <th>{% trans "Fecha prestamo" %}</th>
+								   <th>{% trans "Porcentaje" %}</th>
+								   <th>{% trans "Abonos a capital" %}</th>
+								   <th>{% trans "Saldo capital" %}</th>
+								   <th>{% trans "Acción" %}</th>
+   							   </thead>
+							   <tbody>
+							   </tbody>
+						   </table>
+   
+					   </div> 
+					 
+				   </div>
+				 </div>
+
+			
+			    
+			</div>
+
+		</div>
+
+		</br>
+		<div>
+			<div class="col-md-12" >
+					<div class="card">
+							<div class="card-header text-center">
+							   Registrar prestamo para unión de cuentas
+							</div>
+							<div class="card-body">
+								<form method='POST' novalidate>
+									{% csrf_token %}
+									{% include 'form.html' %}
+		   
+									<input type="hidden" id="cliid" name="cliid" value="">
+									<input type="hidden" id="id_prestam" name="id_prestam" value="">
+		   							<button id="guardar" type="submit" class="btn btn-success">Guardar</button>
+		   
+							  	 </form>
+						  
+							</div>
+							<div class="card-footer">
+								<div id="mensajes">
+					 	
+								</div>
+							</div>
+					</div>
+			</div>
+		</div>
+		
+{% endblock %}
+
+{% block js %}
+	
+ <script type="text/javascript" charset="utf8" src="{% static 'js/jquery.dataTables.js' %}"></script>
+    <script src="{% static 'js/ddv_example_1_10.js' %}"></script>
+    <script type="text/javascript">
+
+    	
+    	
+     /*  USERS_LIST_JSON_URL = '{% url "UsersList110Json" %}';*/
+      
+       var dt_language = {
+            "emptyTable":     "{% trans 'No existen registros' %}",
+            "info":           "{% trans 'Mostrar _START_ a _END_ de _TOTAL_ registros' %}",
+            "infoEmpty":      "{% trans 'Mostrando 0 a 0 of 0 registros' %}",
+            "infoFiltered":   "{% trans '(filtrado de _MAX_ registros totales)' %}",
+            "infoPostFix":    "",
+            "thousands":      ",",
+            "lengthMenu":     "{% trans 'Show _MENU_ entries' %}",
+            "loadingRecords": "{% trans 'Cargando...' %}",
+            "processing":     "{% trans 'Procesando...' %}",
+           /* "search":         "{% trans 'Buscar:' %}",*/
+            "zeroRecords":    "{% trans 'No existen registros' %}",
+            /*"paginate": {
+                "first":      "{% trans 'Primero' %}",
+                "last":       "{% trans 'Ultimo' %}",
+                "next":       "{% trans 'Siguiente' %}",
+                "previous":   "{% trans 'Anterior' %}"
+            },*/
+            "aria": {
+                "sortAscending":  "{% trans ': activate to sort column ascending' %}",
+                "sortDescending": "{% trans ': activate to sort column descending' %}"
+            }
+        }
+
+    </script>
+
+
+   <!-- otros jquery -->
+	
+
+	<script>
+		
+
+        $(document).ready(function(){ 
+            $("#txtSearch").autocomplete({
+                source: "/ajax_calls/search/",
+                minLength: 2,
+                open: function(){
+                    setTimeout(function () {
+                        $('.ui-autocomplete').css('z-index', 99);
+                    }, 0);
+                }
+              });
+        });
+
+       $(document).ready(function(){ 
+        $( "#txtSearch" ).change(function() {
+  			//alert( "Handler for .change() called." );
+  			//e.preventDefault();
+  			var id_delcliente = 0;
+  			var nombrecompleto = $(this).val().trim();
+
+  			console.log("en el evento change nombrecompleto es "+ nombrecompleto);
+  			if (nombrecompleto!=''){
+
+  					nombrecompletosplitted = nombrecompleto.split(',');
+
+					var nombress = nombrecompletosplitted[0].trim();
+			  		var apellidoss = nombrecompletosplitted[1].trim();
+			  							
+			  		  $.ajax({
+				        url: '/ajax_calls/traerDatosdeCliente/',
+				        data: {
+				          'nombres': nombress,
+				          'apellidos': apellidoss,
+
+				        },
+					        dataType: 'json',
+					        success: function (data) {
+					         
+					          $('#datoscliente').html($('<label><strong>Nombres</strong>: '+ data.nombres +'</label></br><label><strong>Apellidos</strong>: '+ data.apellidos +'</label></br><label> <strong>Dirección</strong>: '+ data.direccion +'</label>'));
+					          
+					          $("#cliid").val(data.id);
+					          id_delcliente = data.id;
+					         // alert("id_delcliente 1 ajax : "+id_delcliente);
+					           if ($("#cliid").val()==''){
+					           		alert("por favor seleccione un cliente");
+					           }
+	           
+
+					           /****** poblar la datatable *******/
+					           	//poblarDatatable();
+					           	
+					           	//alert($("#cliid").val());
+					        	/* fin de poblar la datatable*/
+					        },
+					        error: function () {
+					            $('#datoscliente').html($('<label>No existe el cliente consultado</label>'));
+					        }
+
+					        
+					      }).done(function(data) {
+
+					      	USERS_LIST_JSON_URL = '{% url "PrestamosList110Json" %}';
+					      	     cargarPrestamos(id_delcliente);
+
+						      });
+
+				  			}else{
+				  				alert('por favor digite un nombre de cliente a buscar.');
+				  				return;
+				  			}
+
+				  			
+
+
+		});
+		  });
+
+		$( "#txtSearch" ).keyup(function() {
+  			$(this).val($(this).val().toUpperCase());
+		});
+
+    $("#tablaPrestamos").on("click", "tr", function() {          
+   			if (id_prest!=0 || id_prest != undefined){
+				console.log($(this).children(":first").text());
+				var id_prest = $(this).children(":first").text();
+				ABONOS_LIST_JSON_URL = '{% url "AbonosList110Json" %}';
+								$("#id_prestam").val(id_prest);//agregar id_prestamo a campo oculto parausarlo en el registor el abono
+								//cargarAbonos(id_prest);
+			}
+});
+
+
+
+		$(document).ready(function(){ 
+        $( "#guardar" ).click(function(e) {
+			e.preventDefault();
+
+			  console.log("cliente: " + $("#cliid").val());
+			  console.log("prestamo id: " + $("#id_prestam").val());
+
+			  if ($("#cliid").val()=='' || typeof $("#cliid").val() === 'undefined'){
+					           		alert("por favor consulte un cliente.");
+									return ;
+					           }
+			  			
+  			if ($("#id_prestam").val()!='' && typeof $("#id_prestam").val() != 'undefined')
+			  {
+
+				console.log("ok el prestamo seleccionado fue: "+ $("#id_prestam").val());
+				
+				var csrftoken = $("[name=csrfmiddlewaretoken]").val();
+				  							
+			  		  $.ajax({
+						url: '/unioncuentas/nuevo/',
+						type: 'POST',
+						headers:{
+      					  "X-CSRFToken": csrftoken
+    					},
+				        data: {
+							csrfmiddlewaretoken: csrftoken,
+						  'id_cliente': $("#cliid").val(),
+						  'id_prestamo': $("#id_prestam").val(),
+						  'fecha_prestamo': $("#id_fecha_prestamo").val(),
+						  'capital_prestado': $("#id_capital_prestado").val(),
+						  'tipo_prestamo': $("#id_tipo_prestamo").val(),
+				          'meses_plazo': $("#id_meses_plazo").val(),
+						  'porcentaje_aplicado': $("#id_porcentaje_aplicado").val(),
+						  'observaciones': $("#id_observaciones").val(),
+						  
+				        },
+					        dataType: 'json',
+					        success: function (data) {
+					         
+					          $('#mensajes').html($('<div class="alert alert-success" role="alert"> Unión de cuenta N° '+ data.id +' registrado con éxito</div>'));
+					          	//cargarAbonos($("#id_prestam").val());
+				              },
+
+					        error: function (xhr, status, error) {
+								var errorMessage = xhr.status + ': ' + xhr.statusText
+					            $('#mensajes').html($('<div class="alert alert-danger" role="alert"> Error en el registro de la unión de cuentas: '+ errorMessage + ':'+ error +'</div>'));
+					        }
+
+					        
+					      });
+
+				}else{
+				  		alert('por favor seleccione un prestamo, para registrar la union de cuentas.');
+				  		return;
+				  	}
+
+		});
+		  });
+
+
+
+
+ 
+	</script>
+{% endblock %}

@@ -1,0 +1,252 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+{% load static %}
+
+{% load i18n staticfiles %}
+{% block extra_head %}
+	<link rel="stylesheet" href="{% static 'css/misestilos.css' %}">
+
+	<link rel="stylesheet" type="text/css" href="{% static 'css/jquery.dataTables.css' %}">
+    
+
+    <!-- estos links son para darle estilos a la table de listado de clientes -->
+    <link rel="stylesheet" href="{% static 'css/uikit.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/dataTables.uikit.min.css' %}">
+
+{% endblock %}
+
+{%block opcionactiva %}Clientes{% endblock %}
+
+{% block content %}
+		<div class="row">
+			<div class="col-md-4" id="formsection">
+                    <h2>Registro de cliente</h2>
+					
+
+					<form method='POST' enctype="multipart/form-data" novalidate>
+						 {% csrf_token %}
+						 {% include 'form.html' %}
+
+						 <input type="hidden" id="cliid" name="cliid" value="">
+
+						 <button type="submit" class="btn btn-success">Guardar</button>
+
+                    </form>
+                    
+                    <div id="mensajes">
+					 	
+                    </div>
+			</div>
+
+			<div class="col-md-8">
+                <div class="card">
+                    <div class="card-header text-center">
+                       Listado de clientes
+                    </div>
+                    <div class="card-body">
+                            <div class="table-responsive">
+                                    <table id="tablaClientes" class="uk-table uk-table-hover uk-table-striped" style="width:100%"> 
+                                          <thead>
+                                              <th>{% trans "id" %}</th>
+                                              <th>{% trans "Cedula" %}</th>
+                                              <th>{% trans "Nombres" %}</th>
+                                              <th>{% trans "Apellidos" %}</th>
+                                              <th>{% trans "Celular" %}</th>
+                                              <th>{% trans "Acción" %}</th>
+                                          </thead>
+                                          <tbody>
+                                          </tbody>
+                                    </table>
+                            </div>   
+                  
+                    </div>
+                </div>
+			</div>
+		
+		</div>
+
+		
+{% endblock content %}
+
+{% block js %}
+
+<script type="text/javascript" charset="utf8" src="{% static 'js/jquery.dataTables.js' %}"></script>
+    <script src="{% static 'js/ddv_example_1_10.js' %}"></script>
+    <script type="text/javascript">
+
+        CLIENTES_LIST_JSON_URL = '{% url "listar_clientes" %}';
+					
+        
+    	
+           
+       var dt_language = {
+            "emptyTable":     "{% trans 'No existen clientes' %}",
+            "info":           "{% trans 'Mostrar _START_ a _END_ de _TOTAL_ registros' %}",
+            "infoEmpty":      "{% trans 'Mostrando 0 a 0 of 0 registros' %}",
+            "infoFiltered":   "{% trans '(filtrado de _MAX_ registros totales)' %}",
+            "infoPostFix":    "",
+            "thousands":      ",",
+            "lengthMenu":     "{% trans 'Show _MENU_ entries' %}",
+            "loadingRecords": "{% trans 'Cargando...' %}",
+            "processing":     "{% trans 'Procesando...' %}",
+            "search":         "{% trans 'Buscar:' %}",
+            "show":         "{% trans 'Mostrar:' %}",
+            "zeroRecords":    "{% trans 'No existen registros' %}",
+            "paginate": {
+                "first":      "{% trans 'Primero' %}",
+                "last":       "{% trans 'Ultimo' %}",
+                "next":       "{% trans 'Siguiente' %}",
+                "previous":   "{% trans 'Anterior' %}"
+            },
+            "aria": {
+                "sortAscending":  "{% trans ': activate to sort column ascending' %}",
+                "sortDescending": "{% trans ': activate to sort column descending' %}"
+            }
+        }
+
+        cargarClientes();
+
+    </script>
+
+
+ <!-- otros scripts   -->
+	<script>
+        $(document).ready(function(){ 
+            $("#txtSearch").autocomplete({
+                source: "/ajax_calls/search/",
+                minLength: 2,
+                open: function(){
+                    setTimeout(function () {
+                        $('.ui-autocomplete').css('z-index', 99);
+                    }, 0);
+
+
+                }
+              });
+        });
+
+
+        $( "#txtSearch" ).change(function() {
+  			//alert( "Handler for .change() called." );
+  			//e.preventDefault();
+  			var nombrecompleto = $(this).val().trim();
+
+  			if (nombrecompleto!='' && nombrecompleto.includes(",")){
+
+  				nombrecompletosplitted = nombrecompleto.split(',');
+
+					var nombress = nombrecompletosplitted[0].trim();
+			  		var apellidoss = nombrecompletosplitted[1].trim();
+			  							
+			  			$.ajax({
+				        url: '/ajax_calls/traerDatosdeCliente/',
+				        data: {
+				          'nombres': nombress,
+				          'apellidos': apellidoss,
+
+				        },
+					        dataType: 'json',
+					        success: function (data) {
+
+					        	
+
+					          /*$('#datoscliente').html($('<label id="idcli">'+ data.id +'</label></br><label>Nombres: '+ data.nombres +'</label></br><label>Apellidos: '+ data.apellidos +'</label></br><label> Dirección: '+ data.direccion +'</label>'));*/
+					          $('#datoscliente').html($('<label><strong>Nombres</strong>: '+ data.nombres +'</label></br><label><strong>Apellidos</strong>: '+ data.apellidos +'</label></br><label> <strong>Dirección</strong>: '+ data.direccion +'</label>'));
+					          
+					           /*console.log( "el valor es"+ $('#idcli').val());
+					        	alert("el valor es"+ $('#idcli').text());*/
+					           
+					           //$(".clientehidden").val($('#idcli').text());
+					           //$("#cliid").val($('#idcli').text());
+					           $("#cliid").val(data.id);
+					           if ($("#cliid").val()==''){
+					           		alert("por favor seleccione un cliente");
+					           }
+					        	
+					        },
+					        error: function () {
+					            $('#datoscliente').html($('<label>No existe el cliente consultado</label>'));
+					        }
+					      });
+
+  			}else{
+  				alert('por favor digite un nombre de cliente a buscar.');
+  			}
+
+  	
+
+
+		});
+        $( "#id_nombres" ).keyup(function(e) {
+
+            if (e.shiftKey || e.ctrlKey || e.altKey) {
+              e.preventDefault();
+          } else {
+              var key = e.keyCode;
+              if (!((key == 44) || (key == 8) || (key == 9) || (key == 32) || (key == 46) || (key >= 35 && key <= 40) || (key >= 65 && key <= 90) || key == 13)) {
+                  e.preventDefault();
+              }
+          }
+  			$(this).val($(this).val().toUpperCase());
+
+  		
+		});
+		$( "#id_apellidos" ).keyup(function(e) {
+            if (e.shiftKey || e.ctrlKey || e.altKey) {
+              e.preventDefault();
+          } else {
+              var key = e.keyCode;
+              if (!((key == 44) || (key == 8) || (key == 9) || (key == 32) || (key == 46) || (key >= 35 && key <= 40) || (key >= 65 && key <= 90) || key == 13)) {
+                  e.preventDefault();
+              }
+          }
+
+  			$(this).val($(this).val().toUpperCase());
+		
+  		
+        });
+        
+        $( "#id_nombres" ).keypress(function(e) {
+            key = e.keyCode || e.which;
+            tecla = String.fromCharCode(key).toLowerCase();
+            letras = " áéíóúabcdefghijklmnñopqrstuvwxyzABCDEFGHIJKLMNÑOPQRSTUVWXYZ";
+            especiales = "8-37-39-46";
+
+            tecla_especial = false
+            for(var i in especiales){
+                    if(key == especiales[i]){
+                        tecla_especial = true;
+                        break;
+                    }
+                }
+
+                if(letras.indexOf(tecla)==-1 && !tecla_especial){
+                    return false;
+                }
+ 		
+		});
+
+        $( "#id_apellidos" ).keypress(function(e) {
+            key = e.keyCode || e.which;
+            tecla = String.fromCharCode(key).toLowerCase();
+            letras = " áéíóúabcdefghijklmnñopqrstuvwxyzABCDEFGHIJKLMNÑOPQRSTUVWXYZ";
+            especiales = "8-37-39-46";
+
+            tecla_especial = false
+            for(var i in especiales){
+                    if(key == especiales[i]){
+                        tecla_especial = true;
+                        break;
+                    }
+                }
+
+                if(letras.indexOf(tecla)==-1 && !tecla_especial){
+                    return false;
+                }
+ 		
+		});
+		 
+          
+  
+	</script>
+{% endblock %}

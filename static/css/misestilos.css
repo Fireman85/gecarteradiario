@@ -1,0 +1,73 @@
+
+h2{
+	margin-bottom: 1em;
+}
+
+#tablaPrestamos{
+	font-size: 0.8em;
+	
+}
+
+#tablaPrestamos_reporte{
+	font-size: 0.8em;
+	
+}
+
+#tablaPrestamos tr{
+	cursor: pointer;
+	
+}
+#tablaPrestamos_reporte tr{
+	border-bottom: 1px solid gray;
+	
+}
+
+#divforms{
+	margin-top: 1.5em;
+}
+
+#tablaAbonos{
+	font-size: 0.8em;
+}
+
+#datoscliente{
+	margin: 1em 0em 1em 0em;
+	border-radius: 25px;
+	padding-left: 1em;
+	border: 1px solid #17a2b8;
+	background-color:lightblue;
+}
+#formsearch{
+	margin-bottom: 2em;
+	
+}
+
+
+
+/*#txtSearch{
+	background-image:url("../images/glass32.png");
+    background-repeat:no-repeat;
+    padding-left: 2em;
+}*/
+#txtSearch{
+	border: 3px solid #FFD373;
+}
+.txtSearch{
+  padding-left: 2em;
+  /*background: #FFD373;*/
+  background-image:url('../images/glass32.png');
+  background-repeat:no-repeat;
+}
+
+#formsection{
+	border-right: 1px solid gray;
+}
+
+body{
+	background: #f8f8f9;
+}
+
+#contenido{
+	background: white;
+	padding: 2em;
+}

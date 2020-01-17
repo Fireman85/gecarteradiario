@@ -1,0 +1,165 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+{% load static %}
+
+{% load i18n staticfiles %}
+
+{% block extra_head %}
+	<link rel="stylesheet" href="{% static 'css/misestilos.css' %}">
+
+	 <!-- estos links son para darle estilos a la table de listado de clientes -->
+	 <link rel="stylesheet" href="{% static 'css/uikit.min.css' %}">
+	 <link rel="stylesheet" href="{% static 'css/dataTables.uikit.min.css' %}">
+  
+
+{% endblock %}
+
+{%block opcionactiva %}Consultar prestamos activos{% endblock %}
+
+{% block content %}
+		<div class="row">
+			<div class="col-md-12">
+						
+					 <div class="card">
+						<div class="card-header text-center" style="background: #ADD8E6; color: #17a2b8;">
+						  <strong> Listado de prestamos activos  </strong>
+						</div>
+						<div class="card-body">
+                <h6><a href="{% url 'export_prestamos_csv_list' %}"> Exportar a archivo CSV</a></h6>
+						  
+							<div class="table-responsive">
+								<table id="tablaPrestamos_reporte" class="datatable" style="width:100%"> 
+									<thead>
+                                        <th>{% trans "id" %}</th>
+                                        <th>{% trans "Capital prestado" %}</th>
+                                        <th>{% trans "Fecha prestamo" %}</th>
+                                        <th>{% trans "Porcentaje" %}</th>
+                                        <th style="color:#FFD373;">{% trans "Cliente" %}</th>
+                                        <th>{% trans "Abonos a capital" %}</th>
+                                        <th>{% trans "Dctos" %}</th>
+                                        <th>{% trans "Saldo capital" %}</th>
+										
+		
+									</thead>
+									<tbody>
+									</tbody>
+								</table>
+		
+							</div> 
+						  
+						</div>
+					  </div>
+			
+				     
+
+					
+			</div>
+	
+		</div>
+
+
+		
+		
+{% endblock %}
+
+{% block js %}
+	
+ <script type="text/javascript" charset="utf8" src="{% static 'js/jquery.dataTables.js' %} "></script>
+    <script src="{% static 'js/ddv_example_1_10.js' %}"></script>
+    <script type="text/javascript">
+
+    	
+    	
+     /*  USERS_LIST_JSON_URL = '{% url "UsersList110Json" %}';*/
+      
+       var dt_language = {
+            "emptyTable":     "{% trans 'No existen registros' %}",
+            "info":           "{% trans 'Mostrar _START_ a _END_ de _TOTAL_ registros' %}",
+            "infoEmpty":      "{% trans 'Mostrando 0 a 0 of 0 registros' %}",
+            "infoFiltered":   "{% trans '(filtrado de _MAX_ registros totales)' %}",
+            "infoPostFix":    "",
+            "thousands":      ",",
+            "lengthMenu":     "{% trans 'Show _MENU_ entries' %}",
+            "loadingRecords": "{% trans 'Cargando...' %}",
+            "processing":     "{% trans 'Procesando...' %}",
+            "search":         "{% trans 'Buscar:' %}",
+            "zeroRecords":    "{% trans 'No existen registros' %}",
+            "paginate": {
+                "first":      "{% trans 'Primero' %}",
+                "last":       "{% trans 'Ultimo' %}",
+                "next":       "{% trans 'Siguiente' %}",
+                "previous":   "{% trans 'Anterior' %}"
+            },
+            "aria": {
+                "sortAscending":  "{% trans ': activate to sort column ascending' %}",
+                "sortDescending": "{% trans ': activate to sort column descending' %}"
+            }
+        }
+
+    </script>
+
+
+   <!-- otros jquery -->
+	
+
+	<script>
+        TODOS_PRESTAMOS_JSON_URL = '{% url "r_todoslosprestamos" %}';
+        cargarTodosLosPrestamos();
+
+      /*  $(document).ready(function(){ 
+            $("#txtSearch").autocomplete({
+                source: "/ajax_calls/search/",
+                minLength: 2,
+                open: function(){
+                    setTimeout(function () {
+                        $('.ui-autocomplete').css('z-index', 99);
+                    }, 0);
+
+
+                }
+              });
+        });*/
+
+       
+		
+
+
+   //seleccionar fila de la tabla de prestamos
+     /*$('#tablaPrestamos_reporte tr').click(function (event) {
+          console.log("hola"+ this.id); //trying to alert id of the clicked row          
+
+     });*/
+
+    $("#tablaPrestamos_reporte").on("click", "tr", function() {          
+   
+
+/*if (id_prest!=0 || id_prest != undefined){
+	 console.log($(this).children(":first").text());
+    var id_prest = $(this).children(":first").text();
+	ABONOS_LIST_JSON_URL = '{% url "AbonosList110Json" %}';
+					$("#id_prestam").val(id_prest);/
+					cargarAbonos(id_prest);
+}*/
+
+
+});
+ 
+
+
+function consultaEstadoCuenta(elem){
+
+	var cellButton = elem.parentNode;
+			var parent_cellButton = cellButton.parentNode;
+			var Cells = parent_cellButton.getElementsByTagName("td");
+			var id_prestamo =  Cells[0].innerText;
+		/*	alert(id_prestamo);*/
+
+			
+
+			//window.location.href = "../prestamo/estadocuenta?id_prestamo="+id_prestamo;
+			window.open("../prestamo/estadocuenta?id_prestamo="+id_prestamo,"_blank")
+
+}
+
+	</script>
+{% endblock %}

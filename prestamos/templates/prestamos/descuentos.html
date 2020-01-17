@@ -1,0 +1,538 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+{% load static %}
+{% load i18n staticfiles %}
+{% block extra_head %}
+	<link rel="stylesheet" href="{% static 'css/misestilos.css' %}">
+
+	<link rel="stylesheet" type="text/css" href="{% static 'css/jquery.dataTables.css' %}">
+    
+   
+{% endblock %}
+
+{%block opcionactiva %} Registrar descuento {% endblock %}
+{% block content %}
+		<div class="row">
+			<div class="col-md-12">
+					<form id="formsearch" method="POST" onsubmit="return false;">
+						 {% csrf_token %}
+						 <div class="form-group row">
+								
+							<label class="col-sm-2 col-form-label" for="txtSearch"><strong>Nombre del cliente: </strong></label>
+							<div class="col-sm-8">
+									<input type="text" class="form-control txtSearch" id="txtSearch" name="txtSearch" placeholder="Digite nombre y apellidos del cliente para realizar la busqueda">
+							</div>
+							<div class="col-sm-2 text-center">
+									<button type="button" id="btBuscarCliente" class="btn btn-info">Buscar cliente</button>
+							</div> 
+																
+						</div>
+											 
+					</form>
+										  
+									<div id="datoscliente">
+					 	
+									</div>
+							  
+			
+					 <div class="card">
+						<div class="card-header text-center" style="background: #CB3234; color: white;">
+						  <strong> Listado de prestamos del cliente  </strong>
+						</div>
+						<div class="card-body">
+						  
+							<div class="table-responsive">
+								<table id="tablaPrestamos" class="datatable" style="width:100%"> 
+									<thead>
+										<th>{% trans "id" %}</th>
+										<th>{% trans "Capital prestado" %}</th>
+										<th>{% trans "Fecha prestamo" %}</th>
+										<th>{% trans "Porcentaje" %}</th>
+										<th>{% trans "Abonos a capital" %}</th>
+										<th>{% trans "Saldo capital" %}</th>
+										<th>{% trans "Acción" %}</th>
+		
+									</thead>
+									<tbody>
+									</tbody>
+								</table>
+		
+							</div> 
+						  
+						</div>
+					  </div>
+			
+				     
+
+					
+			</div>
+	
+		</div>
+
+
+		<div class="row" id="divforms">
+			<div class="col-md-6" >
+					<div class="card">
+							<div class="card-header text-center">
+							   Registrar descuento
+							</div>
+							<div class="card-body">
+								   <form method='POST' novalidate>
+											{% csrf_token %}
+											{% include 'form.html' %}
+				   
+											<input type="hidden" id="cliid" name="cliid" value="">
+											<input type="hidden" id="id_prestam" name="id_prestam" value="">
+											<div class="text-center">
+													<button id="btGuardaDescuento"  class="btn btn-success">Guardar</button>
+											</div>
+
+											<div id="mensajes" style="margin-top: 1em;">
+
+											</div>
+											
+				   
+								   </form>
+									
+							  
+							</div>
+					</div>
+
+			
+			    
+			</div>
+			<div class="col-md-6" >
+					<div class="card">
+							<div class="card-header text-center">
+							   Listado de descuentos registrados
+							</div>
+							<div class="card-body">
+
+									<div class="table-responsive">
+											<form method='POST' novalidate onsubmit="return false;">
+											 {% csrf_token %}
+												<table id="tablaDescuentos" class="datatable" style="width:100%"> 
+													<thead>
+														<th>{% trans "id" %}</th>
+														<th>{% trans "Fecha descuento" %}</th>
+                                                        <th>{% trans "Valor descuento" %}</th>
+                                                        <th>{% trans "Acción" %}</th>
+                                                    </thead>
+													<tbody>
+													</tbody>
+												</table>
+											</form>
+									</div> 
+
+									<div id="verificaBorrado">
+
+									</div> 
+						  
+							</div>
+					</div>
+
+			
+				 
+			    
+			</div>
+		</div>
+		
+{% endblock %}
+
+{% block js %}
+	
+ <script type="text/javascript" charset="utf8" src="{% static 'js/jquery.dataTables.js' %}"></script>
+    <script src="{% static 'js/ddv_example_1_10.js' %}"></script>
+    <script type="text/javascript">
+
+          	
+     /*  USERS_LIST_JSON_URL = '{% url "UsersList110Json" %}';*/
+      
+       var dt_language = {
+            "emptyTable":     "{% trans 'No existen registros' %}",
+            "info":           "{% trans 'Mostrar _START_ a _END_ de _TOTAL_ registros' %}",
+            "infoEmpty":      "{% trans 'Mostrando 0 a 0 of 0 registros' %}",
+            "infoFiltered":   "{% trans '(filtrado de _MAX_ registros totales)' %}",
+            "infoPostFix":    "",
+            "thousands":      ",",
+            "lengthMenu":     "{% trans 'Show _MENU_ entries' %}",
+            "loadingRecords": "{% trans 'Cargando...' %}",
+            "processing":     "{% trans 'Procesando...' %}",
+           /* "search":         "{% trans 'Buscar:' %}",*/
+            "zeroRecords":    "{% trans 'No existen registros' %}",
+            /*"paginate": {
+                "first":      "{% trans 'Primero' %}",
+                "last":       "{% trans 'Ultimo' %}",
+                "next":       "{% trans 'Siguiente' %}",
+                "previous":   "{% trans 'Anterior' %}"
+            },*/
+            "aria": {
+                "sortAscending":  "{% trans ': activate to sort column ascending' %}",
+                "sortDescending": "{% trans ': activate to sort column descending' %}"
+            }
+        }
+
+    </script>
+
+
+   <!-- otros jquery -->
+	
+
+	<script>
+
+       
+		
+
+        $(document).ready(function(){ 
+            $("#txtSearch").autocomplete({
+                source: "/ajax_calls/search/",
+                minLength: 2,
+                open: function(){
+                    setTimeout(function () {
+                        $('.ui-autocomplete').css('z-index', 99);
+                    }, 0);
+
+
+                }
+              });
+        });
+
+
+		$(document).ready(function(){ 
+        $( "#btBuscarCliente" ).change(function() {
+  			//alert( "Handler for .change() called." );
+  			//e.preventDefault();
+  			var id_delcliente = 0;
+  			var nombrecompleto = $("#txtSearch").val().trim();
+
+  		//	console.log("en el evento change nombrecompleto es "+ nombrecompleto);
+  			if (nombrecompleto!=''){
+
+  				nombrecompletosplitted = nombrecompleto.split(',');
+
+					var nombress = nombrecompletosplitted[0].trim();
+			  		var apellidoss = nombrecompletosplitted[1].trim();
+			  							
+			  		  $.ajax({
+				        url: '/ajax_calls/traerDatosdeCliente/',
+				        data: {
+				          'nombres': nombress,
+				          'apellidos': apellidoss,
+
+				        },
+					        dataType: 'json',
+					        success: function (data) {
+					         
+					          $('#datoscliente').html($(
+								  
+								'<div class= "row"> <div class="col-md-4"> 	<label><strong>Nombres</strong>: '+ data.nombres +
+								 		'</label></br><label><strong>Apellidos</strong>: '+ data.apellidos + 
+								  		'</label></br><label> <strong>Dirección</strong>: '+ data.direccion +'</label>' +
+								'</div>'+
+         							'<div class="col-md-8">'+
+									  ' <img src="" alt ="no image"  width="100px" height="100px"  style="border: 1px solid red"/>'+
+									'</div>'+
+									
+								 '</div>'
+
+								 
+								  
+								  ));
+
+								  
+
+
+					          
+					          $("#cliid").val(data.id);
+					          id_delcliente = data.id;
+					         // alert("id_delcliente 1 ajax : "+id_delcliente);
+					           if ($("#cliid").val()==''){
+					           		alert("por favor seleccione un cliente");
+					           }
+
+					           
+
+					        },
+					        error: function () {
+					            $('#datoscliente').html($('<label>No existe el cliente consultado</label>'));
+					        }
+
+					        
+					      }).done(function(data) {
+
+					      	USERS_LIST_JSON_URL = '{% url "PrestamosList110Json" %}';
+					      	     cargarPrestamos(id_delcliente);
+
+
+					     
+						      });
+
+				  			}else{
+				  				alert('por favor digite un nombre de cliente a buscar.');
+				  				return;
+				  			}
+
+
+				  			
+
+
+		});
+		  });
+
+       $(document).ready(function(){ 
+        $( "#txtSearch" ).change(function() {
+  			//alert( "Handler for .change() called." );
+  			//e.preventDefault();
+  			var id_delcliente = 0;
+  			var nombrecompleto = $(this).val().trim();
+
+  		//	console.log("en el evento change nombrecompleto es "+ nombrecompleto);
+  			if (nombrecompleto!=''){
+
+  				nombrecompletosplitted = nombrecompleto.split(',');
+
+					var nombress = nombrecompletosplitted[0].trim();
+			  		var apellidoss = nombrecompletosplitted[1].trim();
+			  							
+			  		  $.ajax({
+				        url: '/ajax_calls/traerDatosdeCliente/',
+				        data: {
+				          'nombres': nombress,
+				          'apellidos': apellidoss,
+
+				        },
+					        dataType: 'json',
+					        success: function (data) {
+					         
+					          $('#datoscliente').html($(
+								  
+								'<div class= "row"> <div class="col-md-4"> 	<label><strong>Nombres</strong>: '+ data.nombres +
+								 		'</label></br><label><strong>Apellidos</strong>: '+ data.apellidos + 
+								  		'</label></br><label> <strong>Dirección</strong>: '+ data.direccion +'</label>' +
+								'</div>'+
+         							'<div class="col-md-8">'+
+									  ' <img src="" alt ="no image"  width="100px" height="100px"  style="border: 1px solid red"/>'+
+									'</div>'+
+									
+								 '</div>'
+
+								 
+								  
+								  ));
+
+								  
+
+
+					          
+					          $("#cliid").val(data.id);
+					          id_delcliente = data.id;
+					         // alert("id_delcliente 1 ajax : "+id_delcliente);
+					           if ($("#cliid").val()==''){
+					           		alert("por favor seleccione un cliente");
+					           }
+
+									
+					        },
+					        error: function () {
+					            $('#datoscliente').html($('<label>No existe el cliente consultado</label>'));
+					        }
+
+					        
+					      }).done(function(data) {
+
+					      	USERS_LIST_JSON_URL = '{% url "PrestamosList110Json" %}';
+					      	     cargarPrestamos(id_delcliente);
+
+
+					     
+						      });
+
+				  			}else{
+				  				alert('por favor digite un nombre de cliente a buscar.');
+				  				return;
+				  			}
+
+
+				  			
+
+
+		});
+		  });
+
+		$( "#txtSearch" ).keyup(function() {
+  			$(this).val($(this).val().toUpperCase());
+		});
+
+
+   //seleccionar fila de la tabla de prestamos
+     /*$('#tablaPrestamos tr').click(function (event) {
+          console.log("hola"+ this.id); //trying to alert id of the clicked row          
+
+     });*/
+
+    $("#tablaPrestamos").on("click", "tr", function() {          
+   
+
+if (id_prest!=0 || id_prest != undefined){
+	 console.log($(this).children(":first").text());
+    var id_prest = $(this).children(":first").text();
+	DESCUENTOS_LIST_JSON_URL = '{% url "DescuentosList110Json" %}';
+					$("#id_prestam").val(id_prest);//agregar id_prestamo a campo oculto parausarlo en el registor el abono
+					cargarDescuentos(id_prest);
+}
+
+
+
+
+});
+ 
+
+	$(document).ready(function(){ 
+        $( "#btGuardaDescuento" ).click(function(e) {
+			e.preventDefault();
+
+			 // console.log("En el boton de guardar abono");
+			if ($("#id_valor_descuento").val() == '' ){
+
+				alert("Por favor digite el valor a descontar");
+
+				return 0;
+			}
+			if ($("#id_valor_descuento").val() == 0 ){
+
+			alert("El valor a descontar No puede ser 0");
+
+			return 0;
+			}
+
+            if ( typeof($("#id_valor_descuento").val()) == false ){
+
+            alert("El valor a descontar debe ser un numero");
+
+            return 0;
+            }
+			  			
+  			if ($("#id_prestam").val()!=''){
+
+
+				var r = confirm("¿ Esta seguro de hacer este registro ?");
+				if (r == false) {
+				  return 0;
+				} 
+
+			//	console.log("ok el prestamo seleccionar fue: "+ $("#id_prestam").val());
+				var csrftoken = $("[name=csrfmiddlewaretoken]").val();
+
+					  							
+			  		  $.ajax({
+						url: '/ajax_calls/registrarDescuento/',
+						type: 'POST',
+						headers:{
+      					  "X-CSRFToken": csrftoken
+    					},
+				        data: {
+                            csrfmiddlewaretoken: csrftoken,
+                            'id_prestamo': $("#id_prestam").val(),
+						 	  'valor_descuento': $("#id_valor_descuento").val(),
+						},
+					    dataType: 'json',
+					    success: function (data) {
+					         /* recargar abonos del cliente*/
+					          $('#mensajes').html($('<div class="alert alert-success" role="alert"> Descuento registrado con éxito</div>'));
+					          cargarDescuentos($("#id_prestam").val());
+							/* recargar la tabla de abonos de prestamos */
+							  USERS_LIST_JSON_URL = '{% url "PrestamosList110Json" %}';
+								   cargarPrestamos(data.id_cliente);
+								   
+								   document.getElementById("id_valor_descuento").value = 0;
+								   
+								   
+
+
+				              },
+					    error: function (xhr, status, error) {
+								var errorMessage = xhr.status + ': ' + xhr.statusText
+					            $('#mensajes').html($('<div class="alert alert-danger" role="alert"> Error en el registro del descuento: '+ errorMessage + ':'+ error +'</div>'));
+					        }
+
+					        
+					      });
+
+				}else{
+				  		alert('por favor seleccione un prestamo, para registrar el descuento.');
+				  		return;
+				  	}
+
+		});
+		  });
+
+
+
+
+	  /*borrar abonos*/
+	  function borrarDescuento(elem){
+
+			var cellButton = elem.parentNode;
+			var parent_cellButton = cellButton.parentNode;
+			var Cells = parent_cellButton.getElementsByTagName("td");
+			//console.log(Cells[0].innerText);
+			var id_descuento =  Cells[0].innerText;
+
+			var r = confirm("¿ Esta seguro de borrar el descuento seleccionado ?");
+			if (r == true) {
+
+				var csrftoken2 = $("[name=csrfmiddlewaretoken]").val();
+
+				$.ajax({
+						url: '/descuento/borrar/',
+						type: 'POST',
+						headers:{
+							"X-CSRFToken": csrftoken2
+						},
+						data: {
+							csrfmiddlewaretoken: csrftoken2,
+						'id_descuento': id_descuento,
+							},
+						dataType: 'json',
+						success: function (data) {
+							/* recargar abonos del cliente*/
+							$('#verificaBorrado').html($('</br><div class="alert alert-success" role="alert"> El Descuento seleccionado ha sido eliminado </div>'));
+							//cargarAbonos($("#id_prestam").val());
+							/* recargar la tabla de abonos de prestamos */
+							/*USERS_LIST_JSON_URL = '{% url "PrestamosList110Json" %}';
+								cargarPrestamos(data.id_cliente);*/
+
+								$("#cliid").val(data.id_client);
+					            cargarPrestamos(data.id_client);
+
+								$("#id_prestam").val(data.id_prestam);//agregar id_prestamo a campo oculto parausarlo en el registor el abono
+								cargarDescuentos(data.id_prestam);
+
+							},
+						error: function (xhr, status, error) {
+								var errorMessage = xhr.status + ': ' + xhr.statusText
+								$('#verificaBorrado').html($('<div class="alert alert-danger" role="alert"> Error en el borrado del descuento: '+ errorMessage + ':'+ error +'</div>'));
+							}
+
+							
+					});
+
+			}
+
+}
+
+
+function consultaEstadoCuenta(elem){
+
+	var cellButton = elem.parentNode;
+			var parent_cellButton = cellButton.parentNode;
+			var Cells = parent_cellButton.getElementsByTagName("td");
+			var id_prestamo =  Cells[0].innerText;
+	
+		/*esto funciona pero aun no lo he realizado por el comentareado*/
+		//	window.open("../prestamo/estadocuenta?id_prestamo="+id_prestamo,"_blank")
+
+}
+
+	</script>
+{% endblock %}
