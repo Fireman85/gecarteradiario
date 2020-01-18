@@ -89,13 +89,9 @@ WSGI_APPLICATION = 'gescartera_project.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',#'django.db.backends.sqlite3'
-        'NAME': 'gecarteradiario',#os.path.join(BASE_DIR, 'db.sqlite3'),
-        'USER': 'root',  #en mysql
-        'PASSWORD': '57464182',  #en mysql
-        'HOST': 'localhost',  #en mysql
-        'PORT': '3306',  #en mysql
-    }
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+     }
 }
 
 
